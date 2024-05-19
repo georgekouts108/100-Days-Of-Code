@@ -16,16 +16,22 @@ NUMBERS = {'1': [0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0],
 
 
 class NumberGraphic:
-    def __init__(self, number, player_num):
+    def __init__(self, init_number, player_num):
+
         self.y_pos = 300
         self.x_limit = 100 * (-1 if player_num == 1 else 1)
         self.player_num = player_num
-        self.number = number
+        self.number = init_number
+        self.digits = []
+        self.display_number()
 
+    def change_number(self, num):
+        self.number = num
         self.display_number()
 
     def display_number(self):
-        digits = []
+        self.digits = []
+        print(f"$$$$$ {self.digits}")
         numstr = str(self.number)  # ex. '1234'
         x_ref = self.x_limit
 
@@ -45,7 +51,7 @@ class NumberGraphic:
                 block.speed('fastest')
                 block.shapesize(stretch_wid=0.5, stretch_len=0.5)
                 block.penup()
-                block.color('white')
+                block.color('red')
                 block.setx(x)
                 block.sety(y)
                 if code[i] == 0:
@@ -57,7 +63,7 @@ class NumberGraphic:
                 else:
                     x = x + 10
 
-            digits.append(graphic)
+            self.digits.append(graphic)
             digit_count += 1
 
 
@@ -83,19 +89,85 @@ class Ball(Turtle):
         self.penup()
         self.speed('slowest')
         self.color('white')
-        self.shape('square')
+        self.shape('circle')
         self.setheading(choice([30, 150, 210, 330]))
 
-    def bounce(self):
-        # bounce on upper horizontal surface (aka ceiling) ?
+    def bounce_off_ceiling(self):  # case 1
+        angle = self.heading()
+        new_angle = 0
 
-        # bounce on lower horizontal surface (aka floor) ?
+        if 0 < angle < 90:
+            new_angle = 360 - angle
 
-        # bounce on left vertical surface (paddle 1) ?
+        elif 90 < angle < 180:
+            new_angle = angle + (2 * (180 - angle))
 
-        # bounce on right vertical surface (paddle 2) ?
-        #self.setheading(360 - self.heading())
-        pass
+        self.setheading(new_angle)
+
+    def bounce_off_floor(self):  # case 2
+        angle = self.heading()
+        new_angle = 0
+
+        if 270 < angle < 360:
+            new_angle = (360 - angle)
+
+        elif 180 < angle < 270:
+            new_angle = 360 - angle
+
+        self.setheading(new_angle)
+
+    def bounce_off_paddle1(self):  # case 3
+        angle = self.heading()
+        new_angle = 0
+
+        if 180 < angle < 270:
+            new_angle = 540 - angle
+
+        elif 90 < angle < 180:
+            new_angle = 180 - angle
+
+        self.setheading(new_angle)
+
+    def bounce_off_paddle2(self):  # case 4
+        angle = self.heading()
+        new_angle = 0
+
+        if 270 < angle < 360:
+            new_angle = 540 - angle
+
+        elif 0 < angle < 90:
+            new_angle = 180 - angle
+
+        self.setheading(new_angle)
+
+    def is_on_ceil_or_floor(self):
+        ceiling = self.ycor() > 380 and (-630 <= self.xcor() <= 630)
+        floor = self.ycor() < -380 and (-630 <= self.xcor() <= 630)
+
+        if ceiling:
+            return 1
+        if floor:
+            return 0
+
+        return -1
+
+    def passed_paddle(self):
+        if self.xcor() < -630 and (-400 <= self.ycor() <= 400):
+            return 1
+        if self.xcor() > 630 and (-400 <= self.ycor() <= 400):
+            return 2
+
+        return 0
+
+    def touched_paddle(self, paddle):
+        for p in paddle.units:
+            if self.distance(p.xcor(), p.ycor()) < 30:
+                return True
+
+        return False
+
+    def move(self):
+        self.forward(20)
 
 
 class Paddle:
@@ -122,12 +194,10 @@ class Paddle:
 
     def move_up(self):
         if max([seg.ycor() for seg in self.units]) < 380:
-            print(f"Paddle {self.player_num} moving up")
             for seg in self.units:
                 seg.sety(seg.ycor() + 20)
 
     def move_down(self):
         if min([seg.ycor() for seg in self.units]) > -380:
-            print(f"Paddle {self.player_num} moving down")
             for seg in self.units:
                 seg.sety(seg.ycor() - 20)
