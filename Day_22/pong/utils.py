@@ -1,77 +1,40 @@
 from turtle import Turtle
 from random import *
 
-# rows of 3, top to bottom
-NUMBERS = {'1': [0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0],
-           '2': [1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1],
-           '3': [1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1],
-           '4': [1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1],
-           '5': [1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1],
-           '6': [1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1],
-           '7': [1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1],
-           '8': [1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1],
-           '9': [1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1],
-           '0': [1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1]
-           }
+FONT = ('Courier', 80, 'normal')
 
 
-class NumberGraphic:
-    def __init__(self, init_number, player_num):
+class Scoreboard(Turtle):
+    def __init__(self):
+        super().__init__()
+        self.color('green')
+        self.penup()
+        self.hideturtle()
+        self.score1 = 0
+        self.score2 = 0
+        self.goto(-100, 200)
+        self.write(self.score1, align='center', font=FONT)
+        self.goto(100, 200)
+        self.write(self.score2, align='center', font=FONT)
 
-        self.y_pos = 300
-        self.x_limit = 100 * (-1 if player_num == 1 else 1)
-        self.player_num = player_num
-        self.number = init_number
-        self.digits = []
-        self.display_number()
+    def increment(self, side):
+        if side == 1:
+            self.score1 += 1
+        elif side == 2:
+            self.score2 += 1
 
-    def change_number(self, num):
-        self.number = num
-        self.display_number()
-
-    def display_number(self):
-        self.digits = []
-        print(f"$$$$$ {self.digits}")
-        numstr = str(self.number)  # ex. '1234'
-        x_ref = self.x_limit
-
-        digit_count = 1
-
-        number_iter = range(len(numstr)) if self.player_num == 2 else range(-1, -len(numstr) - 1, -1)
-
-        for ni in number_iter:
-
-            y = self.y_pos
-            x = (x_ref * digit_count) - 60
-
-            graphic = []
-            code = NUMBERS[numstr[ni]]
-            for i in range(15):
-                block = Turtle('square')
-                block.speed('fastest')
-                block.shapesize(stretch_wid=0.5, stretch_len=0.5)
-                block.penup()
-                block.color('red')
-                block.setx(x)
-                block.sety(y)
-                if code[i] == 0:
-                    block.hideturtle()
-                graphic.append(block)
-
-                if i in [2, 5, 8, 11]:
-                    x, y = (x - 20, y - 10)
-                else:
-                    x = x + 10
-
-            self.digits.append(graphic)
-            digit_count += 1
+        self.clear()
+        self.goto(-100, 200)
+        self.write(self.score1, align='center', font=FONT)
+        self.goto(100, 200)
+        self.write(self.score2, align='center', font=FONT)
 
 
 class Net:
     def __init__(self):
         self.segments = []
-        x, y = (0, 350)
-        for _ in range(21):
+        x, y = (0, 275)
+        for _ in range(19):
             tt = Turtle('square')
             tt.speed('fastest')
             tt.penup()
@@ -79,7 +42,7 @@ class Net:
             tt.shapesize(stretch_wid=1, stretch_len=0.5)
             tt.setx(x)
             tt.sety(y)
-            y -= 35
+            y -= 30
             self.segments.append(tt)
 
 
@@ -87,12 +50,28 @@ class Ball(Turtle):
     def __init__(self):
         super().__init__()
         self.penup()
-        self.speed('slowest')
+        self.ball_speed = 0.1
         self.color('white')
         self.shape('circle')
         self.setheading(choice([30, 150, 210, 330]))
 
-    def bounce_off_ceiling(self):  # case 1
+    def reset(self):
+        self.setx(0)
+        self.sety(0)
+
+        quad1 = 0 <= self.heading() < 90
+        quad2 = 90 <= self.heading() < 180
+        quad3 = 180 <= self.heading() < 270
+        quad4 = 270 <= self.heading() < 360
+
+        if quad1 or quad4:
+            self.setheading(choice([150, 210]))
+        elif quad2 or quad3:
+            self.setheading(choice([30, 330]))
+
+        self.ball_speed = 0.1
+
+    def bounce_off_ceiling(self):
         angle = self.heading()
         new_angle = 0
 
@@ -104,7 +83,7 @@ class Ball(Turtle):
 
         self.setheading(new_angle)
 
-    def bounce_off_floor(self):  # case 2
+    def bounce_off_floor(self):
         angle = self.heading()
         new_angle = 0
 
@@ -116,7 +95,7 @@ class Ball(Turtle):
 
         self.setheading(new_angle)
 
-    def bounce_off_paddle1(self):  # case 3
+    def bounce_off_paddle1(self):
         angle = self.heading()
         new_angle = 0
 
@@ -126,9 +105,12 @@ class Ball(Turtle):
         elif 90 < angle < 180:
             new_angle = 180 - angle
 
+        elif angle == 180:
+            new_angle = 0
+
         self.setheading(new_angle)
 
-    def bounce_off_paddle2(self):  # case 4
+    def bounce_off_paddle2(self):
         angle = self.heading()
         new_angle = 0
 
@@ -138,11 +120,14 @@ class Ball(Turtle):
         elif 0 < angle < 90:
             new_angle = 180 - angle
 
+        elif angle == 0:
+            new_angle = 180
+
         self.setheading(new_angle)
 
     def is_on_ceil_or_floor(self):
-        ceiling = self.ycor() > 380 and (-630 <= self.xcor() <= 630)
-        floor = self.ycor() < -380 and (-630 <= self.xcor() <= 630)
+        ceiling = self.ycor() > 280 and (-400 <= self.xcor() <= 400)
+        floor = self.ycor() < -280 and (-400 <= self.xcor() <= 400)
 
         if ceiling:
             return 1
@@ -152,9 +137,9 @@ class Ball(Turtle):
         return -1
 
     def passed_paddle(self):
-        if self.xcor() < -630 and (-400 <= self.ycor() <= 400):
+        if self.xcor() < -400 and (-280 <= self.ycor() <= 280):
             return 1
-        if self.xcor() > 630 and (-400 <= self.ycor() <= 400):
+        if self.xcor() > 400 and (-280 <= self.ycor() <= 280):
             return 2
 
         return 0
@@ -173,7 +158,7 @@ class Ball(Turtle):
 class Paddle:
     def __init__(self, player_num):
         self.player_num = player_num
-        self.x = 600 * (-1 if player_num == 1 else 1)
+        self.x = 350 * (-1 if player_num == 1 else 1)
 
         self.up_key = 'w' if player_num == 1 else 'Up'
         self.down_key = 's' if player_num == 1 else 'Down'
@@ -193,11 +178,11 @@ class Paddle:
             self.units[i].setx(self.x)
 
     def move_up(self):
-        if max([seg.ycor() for seg in self.units]) < 380:
+        if max([seg.ycor() for seg in self.units]) < 280:
             for seg in self.units:
                 seg.sety(seg.ycor() + 20)
 
     def move_down(self):
-        if min([seg.ycor() for seg in self.units]) > -380:
+        if min([seg.ycor() for seg in self.units]) > -280:
             for seg in self.units:
                 seg.sety(seg.ycor() - 20)
