@@ -2,25 +2,27 @@ import tkinter
 
 window = tkinter.Tk()
 window.title("My First GUI App")
-window.minsize(width=400, height=50)
+window.minsize(width=250, height=120)
 window.config(padx=20, pady=20)
+window.resizable=False
+
 
 # input
 entry = tkinter.Entry(width=10)
-entry.grid(column=1, row=2)
+entry.grid(column=2, row=1)
 
 # labels
 lb_miles = tkinter.Label(text="Miles")
-lb_miles.grid(column=2, row=2)
+lb_miles.grid(column=3, row=1)
 
 lb_iseqto = tkinter.Label(text="is equal to")
-lb_iseqto.grid(column=1, row=3)
+lb_iseqto.grid(column=1, row=2)
 
 lb_result = tkinter.Label(text="0")
-lb_result.grid(column=2, row=3)
+lb_result.grid(column=2, row=2)
 
 lb_km = tkinter.Label(text="Km")
-lb_km.grid(column=3, row=3)
+lb_km.grid(column=3, row=2)
 
 
 # buttons
@@ -36,6 +38,6 @@ def miles_to_km():
 
 
 btn_calculate = tkinter.Button(text="Calculate", command=miles_to_km)
-btn_calculate.grid(column=1, row=4)
+btn_calculate.grid(column=2, row=3)
 
 window.mainloop()
