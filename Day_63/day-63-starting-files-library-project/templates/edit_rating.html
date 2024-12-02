@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Rating for Book #{{ book_dict['id'] }}</title>
+</head>
+<body>
+  <p>Book Name: {{ book_dict['title'] }}</p>
+  <p>Current Rating: {{ book_dict['rating'] }}</p>
+
+  <form action="{{ url_for('edit_rating', book_dict=book_dict)}}" method="post">
+      <input type="text" name="new_rating" placeholder="New Rating" />
+      <input type="submit" value="Change Rating">
+  </form>
+</body>
+</html>
